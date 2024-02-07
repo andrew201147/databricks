@@ -95,11 +95,17 @@
 -- COMMAND ----------
 
 -- TODO
-CREATE OR REPLACE VIEW events_pivot
-<FILL_IN>
+CREATE OR REPLACE VIEW events_pivot AS
+Select * FROM 
+  (Select user_id user , event_name from events)
+  PIVOT (count(*) FOR event_name IN
 ("cart", "pillows", "login", "main", "careers", "guest", "faq", "down", "warranty", "finalize", 
 "register", "shipping_info", "checkout", "mattresses", "add_item", "press", "email_coupon", 
-"cc_info", "foam", "reviews", "original", "delivery", "premium")
+"cc_info", "foam", "reviews", "original", "delivery", "premium"))
+
+-- COMMAND ----------
+
+Select * from events_pivot
 
 -- COMMAND ----------
 
@@ -109,8 +115,11 @@ CREATE OR REPLACE VIEW events_pivot
 
 -- MAGIC %python
 -- MAGIC # TODO
--- MAGIC (spark.read
--- MAGIC     <FILL_IN>
+-- MAGIC (spark.read.table("events")
+-- MAGIC     .groupBy("user_id")
+-- MAGIC     .pivot("event_name")
+-- MAGIC     .count()
+-- MAGIC     .withColumnRenamed("user_id","user")
 -- MAGIC     .createOrReplaceTempView("events_pivot"))
 
 -- COMMAND ----------
@@ -166,8 +175,14 @@ CREATE OR REPLACE VIEW events_pivot
 -- COMMAND ----------
 
 -- TODO
-CREATE OR REPLACE VIEW clickpaths AS
-<FILL_IN>
+CREATE OR REPLACE TEMP VIEW clickpaths AS
+Select * from events_pivot a
+LEFT JOIN transactions b
+on a.user = b.user_id
+
+-- COMMAND ----------
+
+Select * from clickpaths
 
 -- COMMAND ----------
 
